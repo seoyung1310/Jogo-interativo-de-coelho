@@ -1,75 +1,18 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🐰 ArteVerdade | V ou F de Artes</title>
-  <link rel="stylesheet" href="style.css">
-  <!-- Fontes fofas e legíveis -->
-  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
-</head>
-<body>
-  <!-- Tags semânticas e estrutura limpa -->
-  <header class="cabecalho">
-    <div class="logo-coelho">
-      <span class="orelha-esquerda">🐰</span>
-      <h1>ArteVerdade</h1>
-      <span class="orelha-direita">🌸</span>
-    </div>
-    <p class="subtitulo">Verdadeiro ou Falso? Vamos aprender arte brincando!</p>
-  </header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f7fbfa" />
+    <meta
+      name="description"
+      content="Arte em Jogo: um quiz educativo de artes para o 6º ano."
+    />
+    <title>Arte em Jogo | Desafio do 6º ano</title>
+  </head>
 
-  <main class="container-jogo">
-    <!-- Tela de início -->
-    <section id="telaInicio" class="tela ativa">
-      <div class="caixa-inicio">
-        <div class="coelho-decoracao">
-          <span class="coelho-grande">🐇</span>
-          <div class="nuvem-rosa">🌸</div>
-          <div class="nuvem-azul">☁️</div>
-          <div class="nuvem-verde">🍃</div>
-        </div>
-        <h2>Bem-vindo(a) ao mundo das artes!</h2>
-        <p class="instrucao">Responda se as afirmações são <strong>Verdadeiras</strong> ou <strong>Falsas</strong>.</p>
-        <p class="instrucao">A cada resposta certa, você ganha 1 ponto e fica mais perto de virar um artista!</p>
-        <button id="btnIniciar" class="botao-iniciar">🎨 INICIAR JOGO</button>
-      </div>
-    </section>
-
-    <!-- Tela do jogo (perguntas) -->
-    <section id="telaJogo" class="tela">
-      <div class="painel-info">
-        <div class="pontuacao">⭐ <span id="pontosDisplay">0</span></div>
-        <div class="vidas">❤️ <span id="vidasDisplay">3</span></div>
-        <div class="progresso">Pergunta <span id="perguntaAtual">1</span>/<span id="totalPerguntas">7</span></div>
-      </div>
-      <div class="caixa-pergunta">
-        <div class="coelho-pequeno">🐇</div>
-        <p id="textoPergunta">Carregando pergunta...</p>
-        <div class="botoes-resposta">
-          <button id="btnVerdadeiro" class="botao-verdadeiro">✅ VERDADEIRO</button>
-          <button id="btnFalso" class="botao-falso">❌ FALSO</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- Tela de fim de jogo -->
-    <section id="telaFinal" class="tela">
-      <div class="caixa-final">
-        <div class="coelho-final">🐇🎉</div>
-        <h2 id="mensagemFinal">Você terminou!</h2>
-        <p class="pontuacao-final">Sua pontuação: <span id="pontosFinais">0</span></p>
-        <p id="feedbackFinal" class="feedback"></p>
-        <button id="btnReiniciar" class="botao-reiniciar">🔄 JOGAR NOVAMENTE</button>
-      </div>
-    </section>
-  </main>
-
-  <footer class="rodape">
-    <p>🎨 Arte para crianças - 6º ano | Coelhinho da arte 🐰</p>
-  </footer>
-
-  <!-- Script externo -->
-  <script src="script.js"></script>
-</body>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>
