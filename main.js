@@ -1,161 +1,91 @@
-// script.js — lógica completa do jogo Verdadeiro ou Falso (Artes)
-// Elementos do DOM
-const telaInicio = document.getElementById('telaInicio');
-const telaJogo = document.getElementById('telaJogo');
-const telaFinal = document.getElementById('telaFinal');
-const btnIniciar = document.getElementById('btnIniciar');
-const btnReiniciar = document.getElementById('btnReiniciar');
-const textoPergunta = document.getElementById('textoPergunta');
-const btnVerdadeiro = document.getElementById('btnVerdadeiro');
-const btnFalso = document.getElementById('btnFalso');
-const pontosDisplay = document.getElementById('pontosDisplay');
-const vidasDisplay = document.getElementById('vidasDisplay');
-const perguntaAtualSpan = document.getElementById('perguntaAtual');
-const totalPerguntasSpan = document.getElementById('totalPerguntas');
-const pontosFinais = document.getElementById('pontosFinais');
-const mensagemFinal = document.getElementById('mensagemFinal');
-const feedbackFinal = document.getElementById('feedbackFinal');
-const caixaPergunta = document.querySelector('.caixa-pergunta');
+import { useState } from "react";
 
-// Dados do jogo: perguntas de Artes (Verdadeiro ou Falso)
-const perguntas = [
-  { afirmacao: "As cores primárias são vermelho, azul e amarelo.", resposta: true },
-  { afirmacao: "A Mona Lisa foi pintada por Vincent van Gogh.", resposta: false },
-  { afirmacao: "O pontilhismo é uma técnica que usa pequenos pontos de cor.", resposta: true },
-  { afirmacao: "Escultura é uma forma de arte que só pode ser feita com mármore.", resposta: false },
-  { afirmacao: "O teatro de sombras é uma manifestação artística antiga.", resposta: true },
-  { afirmacao: "A arte abstrata representa objetos de forma bem realista.", resposta: false },
-  { afirmacao: "O balé é um estilo de dança clássica.", resposta: true }
+const questions = [
+  {
+    category: "Cores",
+    question: "Quais são as três cores primárias na pintura?",
+    answers: [
+      "Vermelho, azul e amarelo",
+      "Verde, roxo e laranja",
+      "Azul, verde e rosa",
+      "Preto, branco e cinza",
+    ],
+    correct: 0,
+    fact: "Com vermelho, azul e amarelo podemos criar muitas outras cores!",
+  },
+  // As demais perguntas ficam aqui
 ];
 
-// Variáveis de estado
-let indiceAtual = 0;          // pergunta atual
-let pontos = 0;
-let vidas = 3;
-let jogoAtivo = false;
-let totalPerguntas = perguntas.length;
+export default function App() {
+  const [screen, setScreen] = useState<"start" | "game" | "finish">("start");
+  const [questionIndex, setQuestionIndex] = useState(0);
+  const [score, setScore] = useState(0);
+  const [lives, setLives] = useState(3);
+  const [selected, setSelected] = useState<number | null>(null);
 
-// Inicialização dos displays
-totalPerguntasSpan.textContent = totalPerguntas;
+  const question = questions[questionIndex];
+  const answered = selected !== null;
 
-// Função para mostrar telas
-function mostrarTela(tela) {
-  [telaInicio, telaJogo, telaFinal].forEach(t => t.classList.remove('ativa'));
-  tela.classList.add('ativa');
-}
-
-// Resetar o jogo
-function resetarJogo() {
-  indiceAtual = 0;
-  pontos = 0;
-  vidas = 3;
-  jogoAtivo = true;
-  atualizarPlacar();
-  caixaPergunta.classList.remove('correta', 'errada');
-  mostrarTela(telaJogo);
-  carregarPergunta();
-}
-
-// Atualiza pontos e vidas na tela
-function atualizarPlacar() {
-  pontosDisplay.textContent = pontos;
-  vidasDisplay.textContent = vidas;
-  perguntaAtualSpan.textContent = indiceAtual + 1;
-}
-
-// Carrega a pergunta atual
-function carregarPergunta() {
-  if (!jogoAtivo) return;
-
-  // Verifica se ainda há perguntas e vidas
-  if (indiceAtual >= totalPerguntas || vidas <= 0) {
-    finalizarJogo();
-    return;
+  function startGame() {
+    setQuestionIndex(0);
+    setScore(0);
+    setLives(3);
+    setSelected(null);
+    setScreen("game");
   }
 
-  // Remove classes de feedback anterior
-  caixaPergunta.classList.remove('correta', 'errada');
-  
-  const pergunta = perguntas[indiceAtual];
-  textoPergunta.textContent = pergunta.afirmacao;
-  atualizarPlacar();
-}
+  function chooseAnswer(answerIndex: number) {
+    if (answered) return;
 
-// Verifica a resposta do usuário
-function verificarResposta(respostaUsuario) {
-  if (!jogoAtivo) return;
+    setSelected(answerIndex);
 
-  const pergunta = perguntas[indiceAtual];
-  const acertou = (respostaUsuario === pergunta.resposta);
-
-  // Feedback visual
-  caixaPergunta.classList.remove('correta', 'errada');
-  if (acertou) {
-    caixaPergunta.classList.add('correta');
-    pontos += 1;
-  } else {
-    caixaPergunta.classList.add('errada');
-    vidas -= 1;
+    if (answerIndex === question.correct) {
+      setScore((current) => current + 10);
+    } else {
+      setLives((current) => Math.max(0, current - 1));
+    }
   }
 
-  atualizarPlacar();
+  function nextQuestion() {
+    const outOfLives = lives === 0;
+    const isLastQuestion = questionIndex === questions.length - 1;
 
-  // Avança para próxima pergunta ou finaliza
-  indiceAtual++;
-  
-  // Verifica se o jogo deve continuar
-  if (indiceAtual >= totalPerguntas || vidas <= 0) {
-    // Pequeno delay para o usuário ver o feedback antes de finalizar
-    setTimeout(() => {
-      finalizarJogo();
-    }, 500);
-  } else {
-    // Carrega próxima pergunta com um pequeno atraso para ver a cor
-    setTimeout(() => {
-      carregarPergunta();
-    }, 400);
-  }
-}
+    if (outOfLives || isLastQuestion) {
+      setScreen("finish");
+      return;
+    }
 
-// Finaliza o jogo e mostra a tela final
-function finalizarJogo() {
-  jogoAtivo = false;
-  pontosFinais.textContent = pontos;
-
-  // Define mensagem de acordo com pontuação e vidas
-  if (vidas <= 0) {
-    mensagemFinal.textContent = '😢 Suas vidas acabaram!';
-    feedbackFinal.textContent = 'Não desista! Tente novamente para aprender mais sobre arte.';
-  } else if (pontos === totalPerguntas) {
-    mensagemFinal.textContent = '🏆 PERFEITO! Você é um artista!';
-    feedbackFinal.textContent = 'Uau! Você acertou tudo! Continue assim!';
-  } else if (pontos >= totalPerguntas / 2) {
-    mensagemFinal.textContent = '🎨 Muito bem! Você foi ótimo!';
-    feedbackFinal.textContent = 'Você sabe bastante sobre arte! Continue praticando.';
-  } else {
-    mensagemFinal.textContent = '🐰 Continue tentando!';
-    feedbackFinal.textContent = 'Cada erro é uma chance de aprender mais sobre arte!';
+    setQuestionIndex((current) => current + 1);
+    setSelected(null);
   }
 
-  mostrarTela(telaFinal);
+  return (
+    <div className="app-shell">
+      <header>{/* Logotipo e pontuação */}</header>
+
+      <main>
+        {screen === "start" && (
+          <section>
+            {/* Tela inicial */}
+            <button onClick={startGame}>Começar a jogar</button>
+          </section>
+        )}
+
+        {screen === "game" && (
+          <section>
+            {/* Pergunta, alternativas, vidas e feedback */}
+          </section>
+        )}
+
+        {screen === "finish" && (
+          <section>
+            {/* Resultado final */}
+            <button onClick={startGame}>Jogar novamente</button>
+          </section>
+        )}
+      </main>
+
+      <footer>Feito para pequenos grandes artistas</footer>
+    </div>
+  );
 }
-
-// Eventos de clique
-btnIniciar.addEventListener('click', () => {
-  resetarJogo();
-});
-
-btnReiniciar.addEventListener('click', () => {
-  resetarJogo();
-});
-
-btnVerdadeiro.addEventListener('click', () => {
-  verificarResposta(true);
-});
-
-btnFalso.addEventListener('click', () => {
-  verificarResposta(false);
-});
-
-// Inicializa mostrando a tela de início
-mostrarTela(telaInicio);
