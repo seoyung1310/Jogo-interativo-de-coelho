@@ -1,209 +1,161 @@
-// Banco de perguntas
-var perguntas = [
-    {
-        pergunta: "Quais são as três cores PRIMÁRIAS?",
-        alternativas: [
-            "Verde, laranja e roxo",
-            "Azul, vermelho e amarelo",
-            "Preto, branco e cinza",
-            "Rosa, azul e verde"
-        ],
-        correta: 1
-    },
-    {
-        pergunta: "Qual artista brasileira é famosa por suas obras modernistas?",
-        alternativas: [
-            "Tarsila do Amaral",
-            "Beatriz Milhazes",
-            "Adriana Varejão",
-            "Tomie Ohtake"
-        ],
-        correta: 0
-    },
-    {
-        pergunta: "Misturando AZUL + AMARELO, obtemos qual cor?",
-        alternativas: ["Laranja", "Roxo", "Verde", "Rosa"],
-        correta: 2
-    },
-    {
-        pergunta: "Como se chama a arte de fazer desenhos com pequenos pedaços de pedra ou vidro colorido?",
-        alternativas: ["Pintura a óleo", "Mosaico", "Aquarela", "Grafite"],
-        correta: 1
-    },
-    {
-        pergunta: "Qual desses é um famoso quadro da artista brasileira Tarsila do Amaral?",
-        alternativas: ["Mona Lisa", "Abaporu", "Noite Estrelada", "O Grito"],
-        correta: 1
-    }
+// script.js — lógica completa do jogo Verdadeiro ou Falso (Artes)
+// Elementos do DOM
+const telaInicio = document.getElementById('telaInicio');
+const telaJogo = document.getElementById('telaJogo');
+const telaFinal = document.getElementById('telaFinal');
+const btnIniciar = document.getElementById('btnIniciar');
+const btnReiniciar = document.getElementById('btnReiniciar');
+const textoPergunta = document.getElementById('textoPergunta');
+const btnVerdadeiro = document.getElementById('btnVerdadeiro');
+const btnFalso = document.getElementById('btnFalso');
+const pontosDisplay = document.getElementById('pontosDisplay');
+const vidasDisplay = document.getElementById('vidasDisplay');
+const perguntaAtualSpan = document.getElementById('perguntaAtual');
+const totalPerguntasSpan = document.getElementById('totalPerguntas');
+const pontosFinais = document.getElementById('pontosFinais');
+const mensagemFinal = document.getElementById('mensagemFinal');
+const feedbackFinal = document.getElementById('feedbackFinal');
+const caixaPergunta = document.querySelector('.caixa-pergunta');
+
+// Dados do jogo: perguntas de Artes (Verdadeiro ou Falso)
+const perguntas = [
+  { afirmacao: "As cores primárias são vermelho, azul e amarelo.", resposta: true },
+  { afirmacao: "A Mona Lisa foi pintada por Vincent van Gogh.", resposta: false },
+  { afirmacao: "O pontilhismo é uma técnica que usa pequenos pontos de cor.", resposta: true },
+  { afirmacao: "Escultura é uma forma de arte que só pode ser feita com mármore.", resposta: false },
+  { afirmacao: "O teatro de sombras é uma manifestação artística antiga.", resposta: true },
+  { afirmacao: "A arte abstrata representa objetos de forma bem realista.", resposta: false },
+  { afirmacao: "O balé é um estilo de dança clássica.", resposta: true }
 ];
 
-// Estado do jogo
-var estado = {
-    perguntaAtual: 0,
-    pontos: 0,
-    vidas: 3,
-    respondida: false
-};
+// Variáveis de estado
+let indiceAtual = 0;          // pergunta atual
+let pontos = 0;
+let vidas = 3;
+let jogoAtivo = false;
+let totalPerguntas = perguntas.length;
 
-// Aguarda o HTML carregar completamente antes de rodar o script
-window.addEventListener('DOMContentLoaded', function() {
+// Inicialização dos displays
+totalPerguntasSpan.textContent = totalPerguntas;
 
-    // Elementos do DOM
-    var telas = {
-        inicial: document.getElementById('tela-inicial'),
-        jogo: document.getElementById('tela-jogo'),
-        final: document.getElementById('tela-final')
-    };
+// Função para mostrar telas
+function mostrarTela(tela) {
+  [telaInicio, telaJogo, telaFinal].forEach(t => t.classList.remove('ativa'));
+  tela.classList.add('ativa');
+}
 
-    var elementos = {
-        pontos: document.getElementById('pontos'),
-        vidas: document.getElementById('vidas'),
-        contador: document.getElementById('contador'),
-        pergunta: document.getElementById('pergunta'),
-        alternativas: document.getElementById('alternativas'),
-        feedback: document.getElementById('feedback'),
-        tituloFinal: document.getElementById('titulo-final'),
-        emojiFinal: document.getElementById('emoji-final'),
-        coelhoFinal: document.getElementById('coelho-final'),
-        mensagemFinal: document.getElementById('mensagem-final'),
-        pontosFinais: document.getElementById('pontos-finais')
-    };
+// Resetar o jogo
+function resetarJogo() {
+  indiceAtual = 0;
+  pontos = 0;
+  vidas = 3;
+  jogoAtivo = true;
+  atualizarPlacar();
+  caixaPergunta.classList.remove('correta', 'errada');
+  mostrarTela(telaJogo);
+  carregarPergunta();
+}
 
-    // Funções
-    function trocarTela(nomeTela) {
-        telas.inicial.classList.remove('ativa');
-        telas.jogo.classList.remove('ativa');
-        telas.final.classList.remove('ativa');
-        telas[nomeTela].classList.add('ativa');
-    }
+// Atualiza pontos e vidas na tela
+function atualizarPlacar() {
+  pontosDisplay.textContent = pontos;
+  vidasDisplay.textContent = vidas;
+  perguntaAtualSpan.textContent = indiceAtual + 1;
+}
 
-    function atualizarPainel() {
-        elementos.pontos.textContent = estado.pontos;
+// Carrega a pergunta atual
+function carregarPergunta() {
+  if (!jogoAtivo) return;
 
-        var coracoesCheios = '';
-        var coracoesVazios = '';
-        var i;
+  // Verifica se ainda há perguntas e vidas
+  if (indiceAtual >= totalPerguntas || vidas <= 0) {
+    finalizarJogo();
+    return;
+  }
 
-        for (i = 0; i < estado.vidas; i++) {
-            coracoesCheios += '💗';
-        }
-        for (i = 0; i < (3 - estado.vidas); i++) {
-            coracoesVazios += '🤍';
-        }
-        elementos.vidas.textContent = coracoesCheios + coracoesVazios;
+  // Remove classes de feedback anterior
+  caixaPergunta.classList.remove('correta', 'errada');
+  
+  const pergunta = perguntas[indiceAtual];
+  textoPergunta.textContent = pergunta.afirmacao;
+  atualizarPlacar();
+}
 
-        elementos.contador.textContent = (estado.perguntaAtual + 1) + '/' + perguntas.length;
-    }
+// Verifica a resposta do usuário
+function verificarResposta(respostaUsuario) {
+  if (!jogoAtivo) return;
 
-    function carregarPergunta() {
-        estado.respondida = false;
-        elementos.feedback.textContent = '';
-        elementos.feedback.className = 'feedback';
+  const pergunta = perguntas[indiceAtual];
+  const acertou = (respostaUsuario === pergunta.resposta);
 
-        var p = perguntas[estado.perguntaAtual];
-        elementos.pergunta.textContent = p.pergunta;
+  // Feedback visual
+  caixaPergunta.classList.remove('correta', 'errada');
+  if (acertou) {
+    caixaPergunta.classList.add('correta');
+    pontos += 1;
+  } else {
+    caixaPergunta.classList.add('errada');
+    vidas -= 1;
+  }
 
-        elementos.alternativas.innerHTML = '';
+  atualizarPlacar();
 
-        var letras = ['A', 'B', 'C', 'D'];
+  // Avança para próxima pergunta ou finaliza
+  indiceAtual++;
+  
+  // Verifica se o jogo deve continuar
+  if (indiceAtual >= totalPerguntas || vidas <= 0) {
+    // Pequeno delay para o usuário ver o feedback antes de finalizar
+    setTimeout(() => {
+      finalizarJogo();
+    }, 500);
+  } else {
+    // Carrega próxima pergunta com um pequeno atraso para ver a cor
+    setTimeout(() => {
+      carregarPergunta();
+    }, 400);
+  }
+}
 
-        p.alternativas.forEach(function(texto, index) {
-            var btn = document.createElement('button');
-            btn.classList.add('alternativa');
-            btn.textContent = letras[index] + ') ' + texto;
-            btn.addEventListener('click', function() {
-                responder(index, btn);
-            });
-            elementos.alternativas.appendChild(btn);
-        });
+// Finaliza o jogo e mostra a tela final
+function finalizarJogo() {
+  jogoAtivo = false;
+  pontosFinais.textContent = pontos;
 
-        atualizarPainel();
-    }
+  // Define mensagem de acordo com pontuação e vidas
+  if (vidas <= 0) {
+    mensagemFinal.textContent = '😢 Suas vidas acabaram!';
+    feedbackFinal.textContent = 'Não desista! Tente novamente para aprender mais sobre arte.';
+  } else if (pontos === totalPerguntas) {
+    mensagemFinal.textContent = '🏆 PERFEITO! Você é um artista!';
+    feedbackFinal.textContent = 'Uau! Você acertou tudo! Continue assim!';
+  } else if (pontos >= totalPerguntas / 2) {
+    mensagemFinal.textContent = '🎨 Muito bem! Você foi ótimo!';
+    feedbackFinal.textContent = 'Você sabe bastante sobre arte! Continue praticando.';
+  } else {
+    mensagemFinal.textContent = '🐰 Continue tentando!';
+    feedbackFinal.textContent = 'Cada erro é uma chance de aprender mais sobre arte!';
+  }
 
-    function responder(indiceEscolhido, botaoClicado) {
-        if (estado.respondida) return;
-        estado.respondida = true;
+  mostrarTela(telaFinal);
+}
 
-        var p = perguntas[estado.perguntaAtual];
-        var botoes = document.querySelectorAll('.alternativa');
-
-        botoes.forEach(function(b) {
-            b.disabled = true;
-        });
-
-        if (indiceEscolhido === p.correta) {
-            botaoClicado.classList.add('correta');
-            estado.pontos += 10;
-            elementos.feedback.textContent = '🎨 Acertou! +10 pontos!';
-            elementos.feedback.classList.add('acerto');
-        } else {
-            botaoClicado.classList.add('errada');
-            botoes[p.correta].classList.add('correta');
-            estado.vidas--;
-            elementos.feedback.textContent = '🐰 Ops! Resposta errada!';
-            elementos.feedback.classList.add('erro');
-        }
-
-        atualizarPainel();
-
-        if (estado.vidas <= 0) {
-            setTimeout(function() {
-                finalizarJogo(false);
-            }, 1600);
-            return;
-        }
-
-        setTimeout(function() {
-            estado.perguntaAtual++;
-            if (estado.perguntaAtual < perguntas.length) {
-                carregarPergunta();
-            } else {
-                finalizarJogo(true);
-            }
-        }, 1600);
-    }
-
-    function finalizarJogo(completou) {
-        trocarTela('final');
-        elementos.pontosFinais.textContent = estado.pontos;
-
-        var totalPossivel = perguntas.length * 10;
-
-        if (!completou) {
-            elementos.tituloFinal.textContent = 'Fim de Jogo! 😢';
-            elementos.emojiFinal.textContent = '💔';
-            elementos.coelhoFinal.textContent = '😿';
-            elementos.mensagemFinal.textContent = 'O coelhinho ficou triste! Tente novamente.';
-        } else if (estado.pontos === totalPossivel) {
-            elementos.tituloFinal.textContent = 'Perfeito! 🌟';
-            elementos.emojiFinal.textContent = '🏆';
-            elementos.coelhoFinal.textContent = '🐰';
-            elementos.mensagemFinal.textContent = 'Uau! Você é um verdadeiro artista!';
-        } else if (estado.pontos >= totalPossivel * 0.6) {
-            elementos.tituloFinal.textContent = 'Muito Bem! 🎉';
-            elementos.emojiFinal.textContent = '🥈';
-            elementos.coelhoFinal.textContent = '😊';
-            elementos.mensagemFinal.textContent = 'Ótimo resultado! O coelhinho está orgulhoso!';
-        } else {
-            elementos.tituloFinal.textContent = 'Boa Tentativa! 💪';
-            elementos.emojiFinal.textContent = '🥉';
-            elementos.coelhoFinal.textContent = '🐰';
-            elementos.mensagemFinal.textContent = 'Continue estudando arte, você vai melhorar!';
-        }
-    }
-
-    function iniciarJogo() {
-        estado.perguntaAtual = 0;
-        estado.pontos = 0;
-        estado.vidas = 3;
-        estado.respondida = false;
-        trocarTela('jogo');
-        carregarPergunta();
-    }
-
-    // Eventos
-    document.getElementById('btn-iniciar').addEventListener('click', iniciarJogo);
-    document.getElementById('btn-reiniciar').addEventListener('click', iniciarJogo);
-
-    console.log('✅ Quiz de Artes carregado com sucesso!');
+// Eventos de clique
+btnIniciar.addEventListener('click', () => {
+  resetarJogo();
 });
+
+btnReiniciar.addEventListener('click', () => {
+  resetarJogo();
+});
+
+btnVerdadeiro.addEventListener('click', () => {
+  verificarResposta(true);
+});
+
+btnFalso.addEventListener('click', () => {
+  verificarResposta(false);
+});
+
+// Inicializa mostrando a tela de início
+mostrarTela(telaInicio);
